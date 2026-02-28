@@ -7,4 +7,6 @@ import java.util.List;
 @Service
 public interface MenuService  {
     List<Menu> getAllMenus();
+
+    Menu createMenu(Menu menu);
 }
