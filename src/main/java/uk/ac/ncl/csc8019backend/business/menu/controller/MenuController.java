@@ -1,7 +1,7 @@
 package uk.ac.ncl.csc8019backend.business.menu.controller;
 
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import uk.ac.ncl.csc8019backend.business.demo.entity.Demo;
 import uk.ac.ncl.csc8019backend.business.menu.entity.Menu;
 import uk.ac.ncl.csc8019backend.business.menu.service.MenuService;
 import uk.ac.ncl.csc8019backend.system.common.Result;
@@ -9,13 +9,14 @@ import uk.ac.ncl.csc8019backend.system.common.Result;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/menu")
+@RequestMapping("/api/menu") //指定请求路径
+@AllArgsConstructor
 public class MenuController {
     private final MenuService menuService;
 
-    public MenuController(MenuService menuService) {
-        this.menuService = menuService;
-    }
+//    public MenuController(MenuService menuService) {
+//        this.menuService = menuService;
+//    }
 
     @GetMapping("/list")
     public Result<List<Menu>> list() {
@@ -28,9 +29,11 @@ public class MenuController {
 
     @PostMapping("/create")
     public Result<Menu> create(@RequestBody Menu menu) {
+        System.out.println(menu.getId() +" "+ menu.getName() + " " + menu.getCategory() + " " + menu.getRegularPrice() + " " + menu.getLargePrice());
         return Result.success(menuService.createMenu(menu));
         //调用服务接口里的创建menu方法，而这个方法又是在对应的impl类里实现的，而impl里的实现又是根据repository里的方法
     }
+
 
 
 }

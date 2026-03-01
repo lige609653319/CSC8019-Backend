@@ -13,10 +13,13 @@ public class Menu {
 
     private String name;
 
-    //什么时候用枚举 when use enum
-    private String category;
+    @Enumerated(EnumType.STRING)
+    private Category category;
 
-    private Double priceRegular;
-    private Double priceLarge;
+    private Double regularPrice;
+    private Double largePrice;
+
+    private Integer stock;
+    private Boolean isAvailable;
 
 }
