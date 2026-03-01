@@ -15,11 +15,45 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<Menu> getAllMenus() {
-        return menuRepository.findAll();
+        return menuRepository.findAll(); // Returns all entities.
     }
 
     @Override
     public Menu createMenu(Menu menu) {
-        return menuRepository.save(menu);
+        return menuRepository.save(menu); // Saves the given entity.
     }
+
+    @Override
+    public void deleteMenu(Long id) {
+        menuRepository.deleteById(id);
+    }
+
+    @Override
+    public Menu patchMenu(Long id, Menu menu) {
+        Menu existing = menuRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Menu not found"));
+
+        if (menu.getName() != null) {
+            existing.setName(menu.getName());
+        }
+        if (menu.getCategory() != null) {
+            existing.setCategory(menu.getCategory());
+        }
+        if (menu.getRegularPrice() != null) {
+            existing.setRegularPrice(menu.getRegularPrice());
+        }
+        if (menu.getLargePrice() != null) {
+            existing.setLargePrice(menu.getLargePrice());
+        }
+        if (menu.getStock() != null) {
+            existing.setStock(menu.getStock());
+        }
+        if (menu.getIsAvailable() != null) {
+            existing.setIsAvailable(menu.getIsAvailable());
+        }
+
+        return menuRepository.save(existing);
+    }
+
+
 }

@@ -1,5 +1,6 @@
 package uk.ac.ncl.csc8019backend.business.menu.controller;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ncl.csc8019backend.business.menu.entity.Menu;
@@ -14,26 +15,27 @@ import java.util.List;
 public class MenuController {
     private final MenuService menuService;
 
-//    public MenuController(MenuService menuService) {
-//        this.menuService = menuService;
-//    }
-
     @GetMapping("/list")
     public Result<List<Menu>> list() {
         return Result.success(menuService.getAllMenus());
     }
 
-//    @PostMapping("/create")
-//    public Menu create(@RequestBody Menu menu) {
-//        return menuRepository.save(menu);
-
     @PostMapping("/create")
-    public Result<Menu> create(@RequestBody Menu menu) {
-        System.out.println(menu.getId() +" "+ menu.getName() + " " + menu.getCategory() + " " + menu.getRegularPrice() + " " + menu.getLargePrice());
+    public Result<Menu> create(@Valid @RequestBody Menu menu) { //@Valid: check validation
+        System.out.println(menu.getId() + " " + menu.getName() + " " + menu.getCategory() + " " + menu.getRegularPrice() + " " + menu.getLargePrice());
         return Result.success(menuService.createMenu(menu));
-        //调用服务接口里的创建menu方法，而这个方法又是在对应的impl类里实现的，而impl里的实现又是根据repository里的方法
+        //三层架构 调用服务接口里的创建menu方法，而这个方法又是在对应的impl类里实现的，而impl里的实现又是根据repository里的方法
     }
 
+    @DeleteMapping("/{id}")
+    public Result<Void> delete(@PathVariable Long id) {
+        menuService.deleteMenu(id);
+        return Result.success(null);
+    }
 
-
+    //Partial update
+    @PatchMapping("/{id}")
+    public Result<Menu> patch(@PathVariable Long id, @RequestBody Menu menu) {
+        return Result.success(menuService.patchMenu(id, menu));
+    }
 }
