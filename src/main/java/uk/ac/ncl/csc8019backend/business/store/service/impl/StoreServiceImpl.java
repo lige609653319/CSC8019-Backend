@@ -6,6 +6,7 @@ import uk.ac.ncl.csc8019backend.business.store.repository.StoreRepository;
 import uk.ac.ncl.csc8019backend.business.store.service.StoreService;
 import uk.ac.ncl.csc8019backend.system.common.ResultCode;
 import uk.ac.ncl.csc8019backend.system.exception.CustomException;
+import uk.ac.ncl.csc8019backend.business.store.dto.StoreNearbyResponse;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
@@ -213,7 +214,7 @@ public class StoreServiceImpl implements StoreService {
      * Get nearby stores
      */
     @Override
-    public List<Store> getNearbyStores(Double latitude, Double longitude, Double radius) {
+    public List<StoreNearbyResponse> getNearbyStores(Double latitude, Double longitude, Double radius) {
         if (latitude == null || longitude == null || radius == null) {
             throw new CustomException(ResultCode.FAILED, "Latitude, longitude and radius must all be provided.");
         }
@@ -239,11 +240,12 @@ public class StoreServiceImpl implements StoreService {
                         return false;
                     }
                 })
-                .filter(store -> calculateDistance(latitude, longitude, store.getLatitude(), store.getLongitude()) <= radius)
-                .sorted((a, b) -> Double.compare(
-                        calculateDistance(latitude, longitude, a.getLatitude(), a.getLongitude()),
-                        calculateDistance(latitude, longitude, b.getLatitude(), b.getLongitude())
+                .map(store -> new StoreNearbyResponse(
+                        store,
+                        Math.round(calculateDistance(latitude, longitude, store.getLatitude(), store.getLongitude()) * 100.0) / 100.0
                 ))
+                .filter(item -> item.getDistance() <= radius)
+                .sorted((a, b) -> Double.compare(a.getDistance(), b.getDistance()))
                 .toList();
     }
 

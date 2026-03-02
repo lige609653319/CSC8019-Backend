@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ncl.csc8019backend.business.store.entity.Store;
 import uk.ac.ncl.csc8019backend.business.store.service.StoreService;
 import uk.ac.ncl.csc8019backend.system.common.Result;
+import uk.ac.ncl.csc8019backend.business.store.dto.StoreNearbyResponse;
 
 import java.util.List;
 
@@ -55,7 +56,7 @@ public class StoreController {
      * Get nearby stores
      */
     @GetMapping("/nearby")
-    public Result<List<Store>> nearbyStores(
+    public Result<List<StoreNearbyResponse>> nearbyStores(
             @RequestParam Double latitude,
             @RequestParam Double longitude,
             @RequestParam Double radius) {

@@ -1,5 +1,6 @@
 package uk.ac.ncl.csc8019backend.business.store.service;
 
+import uk.ac.ncl.csc8019backend.business.store.dto.StoreNearbyResponse;
 import uk.ac.ncl.csc8019backend.business.store.entity.Store;
 
 import java.util.List;
@@ -33,7 +34,7 @@ public interface StoreService {
     /**
      * Get nearby stores
      */
-    List<Store> getNearbyStores(Double latitude, Double longitude, Double radius);
+    List<StoreNearbyResponse> getNearbyStores(Double latitude, Double longitude, Double radius);
 
     /**
      * Get store by id
