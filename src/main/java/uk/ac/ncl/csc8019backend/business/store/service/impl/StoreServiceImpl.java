@@ -6,25 +6,38 @@ import uk.ac.ncl.csc8019backend.business.store.repository.StoreRepository;
 import uk.ac.ncl.csc8019backend.business.store.service.StoreService;
 import uk.ac.ncl.csc8019backend.system.common.ResultCode;
 import uk.ac.ncl.csc8019backend.system.exception.CustomException;
+
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
-
 import java.util.List;
 
+/**
+ * Store service implementation
+ * Handles store business rules
+ */
 @Service
 public class StoreServiceImpl implements StoreService {
 
     private final StoreRepository storeRepository;
 
+    /**
+     * Store service constructor
+     */
     public StoreServiceImpl(StoreRepository storeRepository) {
         this.storeRepository = storeRepository;
     }
 
+    /**
+     * Get all stores
+     */
     @Override
     public List<Store> getAllStores() {
         return storeRepository.findAll();
     }
 
+    /**
+     * Get stores by status
+     */
     @Override
     public List<Store> getStoresByStatus(String status) {
         if (status == null || status.trim().isEmpty()) {
@@ -34,6 +47,9 @@ public class StoreServiceImpl implements StoreService {
         return storeRepository.findByStatus(status.trim());
     }
 
+    /**
+     * Get stores by name
+     */
     @Override
     public List<Store> getStoresByName(String name) {
         if (name == null || name.trim().isEmpty()) {
@@ -43,12 +59,18 @@ public class StoreServiceImpl implements StoreService {
         return storeRepository.findByNameContainingIgnoreCase(name.trim());
     }
 
+    /**
+     * Get store by id
+     */
     @Override
     public Store getStoreById(Long id) {
         return storeRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ResultCode.FAILED, "Store not found."));
     }
 
+    /**
+     * Create a store
+     */
     @Override
     public Store createStore(Store store) {
         if (store.getCode() == null || store.getCode().trim().isEmpty()) {
@@ -64,12 +86,19 @@ public class StoreServiceImpl implements StoreService {
         }
 
         store.setCode(store.getCode().trim());
+
+        // Validate business hours before saving
         validateBusinessHours(store.getOpeningTime(), store.getClosingTime());
+
+        // Validate coordinates before saving
         validateCoordinates(store.getLatitude(), store.getLongitude());
 
         return storeRepository.save(store);
     }
 
+    /**
+     * Update a store
+     */
     @Override
     public Store updateStore(Long id, Store store) {
         Store existingStore = storeRepository.findById(id)
@@ -93,11 +122,18 @@ public class StoreServiceImpl implements StoreService {
         existingStore.setOpeningTime(store.getOpeningTime());
         existingStore.setClosingTime(store.getClosingTime());
 
+        // Validate business hours before saving
         validateBusinessHours(existingStore.getOpeningTime(), existingStore.getClosingTime());
+
+        // Validate coordinates before saving
+        validateCoordinates(existingStore.getLatitude(), existingStore.getLongitude());
 
         return storeRepository.save(existingStore);
     }
 
+    /**
+     * Disable a store
+     */
     @Override
     public Store disableStore(Long id) {
         Store existingStore = storeRepository.findById(id)
@@ -107,6 +143,9 @@ public class StoreServiceImpl implements StoreService {
         return storeRepository.save(existingStore);
     }
 
+    /**
+     * Activate a store
+     */
     @Override
     public Store activateStore(Long id) {
         Store existingStore = storeRepository.findById(id)
@@ -116,6 +155,9 @@ public class StoreServiceImpl implements StoreService {
         return storeRepository.save(existingStore);
     }
 
+    /**
+     * Check store open status
+     */
     @Override
     public boolean isStoreOpen(Long id) {
         Store existingStore = storeRepository.findById(id)
@@ -144,6 +186,9 @@ public class StoreServiceImpl implements StoreService {
         }
     }
 
+    /**
+     * Get open stores
+     */
     @Override
     public List<Store> getOpenStores() {
         LocalTime now = LocalTime.now();
@@ -164,6 +209,9 @@ public class StoreServiceImpl implements StoreService {
                 .toList();
     }
 
+    /**
+     * Get nearby stores
+     */
     @Override
     public List<Store> getNearbyStores(Double latitude, Double longitude, Double radius) {
         if (latitude == null || longitude == null || radius == null) {
@@ -176,6 +224,7 @@ public class StoreServiceImpl implements StoreService {
 
         LocalTime now = LocalTime.now();
 
+        // Keep active stores with valid hours and coordinates
         return storeRepository.findAll().stream()
                 .filter(store -> "ACTIVE".equalsIgnoreCase(store.getStatus()))
                 .filter(store -> store.getOpeningTime() != null && !store.getOpeningTime().trim().isEmpty())
@@ -198,6 +247,9 @@ public class StoreServiceImpl implements StoreService {
                 .toList();
     }
 
+    /**
+     * Validate business hours
+     */
     private void validateBusinessHours(String openingTime, String closingTime) {
         boolean openingBlank = openingTime == null || openingTime.trim().isEmpty();
         boolean closingBlank = closingTime == null || closingTime.trim().isEmpty();
@@ -222,6 +274,9 @@ public class StoreServiceImpl implements StoreService {
         }
     }
 
+    /**
+     * Validate coordinates
+     */
     private void validateCoordinates(Double latitude, Double longitude) {
         if (latitude == null && longitude == null) {
             return;
@@ -240,8 +295,11 @@ public class StoreServiceImpl implements StoreService {
         }
     }
 
+    /**
+     * Calculate distance in kilometers
+     */
     private double calculateDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
-        final double earthRadius = 6371.0; // km
+        final double earthRadius = 6371.0;
 
         double latDistance = Math.toRadians(lat2 - lat1);
         double lonDistance = Math.toRadians(lon2 - lon1);
