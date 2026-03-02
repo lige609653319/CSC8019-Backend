@@ -6,6 +6,8 @@ import uk.ac.ncl.csc8019backend.business.store.repository.StoreRepository;
 import uk.ac.ncl.csc8019backend.business.store.service.StoreService;
 import uk.ac.ncl.csc8019backend.system.common.ResultCode;
 import uk.ac.ncl.csc8019backend.system.exception.CustomException;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 
 import java.util.List;
 
@@ -53,6 +55,8 @@ public class StoreServiceImpl implements StoreService {
         }
 
         store.setCode(store.getCode().trim());
+        validateBusinessHours(store.getOpeningTime(), store.getClosingTime());
+
         return storeRepository.save(store);
     }
 
@@ -70,6 +74,11 @@ public class StoreServiceImpl implements StoreService {
         if (store.getStatus() != null && !store.getStatus().trim().isEmpty()) {
             existingStore.setStatus(store.getStatus().trim());
         }
+
+        existingStore.setOpeningTime(store.getOpeningTime());
+        existingStore.setClosingTime(store.getClosingTime());
+
+        validateBusinessHours(existingStore.getOpeningTime(), existingStore.getClosingTime());
 
         return storeRepository.save(existingStore);
     }
@@ -90,5 +99,57 @@ public class StoreServiceImpl implements StoreService {
 
         existingStore.setStatus("ACTIVE");
         return storeRepository.save(existingStore);
+    }
+
+    @Override
+    public boolean isStoreOpen(Long id) {
+        Store existingStore = storeRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ResultCode.FAILED, "Store not found."));
+
+        if (!"ACTIVE".equalsIgnoreCase(existingStore.getStatus())) {
+            return false;
+        }
+
+        String openingTime = existingStore.getOpeningTime();
+        String closingTime = existingStore.getClosingTime();
+
+        if (openingTime == null || openingTime.trim().isEmpty()
+                || closingTime == null || closingTime.trim().isEmpty()) {
+            return false;
+        }
+
+        try {
+            LocalTime open = LocalTime.parse(openingTime.trim());
+            LocalTime close = LocalTime.parse(closingTime.trim());
+            LocalTime now = LocalTime.now();
+
+            return !now.isBefore(open) && now.isBefore(close);
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
+
+    private void validateBusinessHours(String openingTime, String closingTime) {
+        boolean openingBlank = openingTime == null || openingTime.trim().isEmpty();
+        boolean closingBlank = closingTime == null || closingTime.trim().isEmpty();
+
+        if (openingBlank && closingBlank) {
+            return;
+        }
+
+        if (openingBlank || closingBlank) {
+            throw new CustomException(ResultCode.FAILED, "Opening time and closing time must both be provided.");
+        }
+
+        try {
+            LocalTime open = LocalTime.parse(openingTime.trim());
+            LocalTime close = LocalTime.parse(closingTime.trim());
+
+            if (!open.isBefore(close)) {
+                throw new CustomException(ResultCode.FAILED, "Opening time must be earlier than closing time.");
+            }
+        } catch (DateTimeParseException e) {
+            throw new CustomException(ResultCode.FAILED, "Time format must be HH:mm.");
+        }
     }
 }

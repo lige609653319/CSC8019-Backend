@@ -21,4 +21,8 @@ public class Store {
     private String locationName;
 
     private String status;
+
+    private String openingTime;
+
+    private String closingTime;
 }

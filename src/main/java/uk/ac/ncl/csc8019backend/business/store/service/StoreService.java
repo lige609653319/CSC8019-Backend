@@ -12,4 +12,5 @@ public interface StoreService {
     Store updateStore(Long id, Store store);
     Store disableStore(Long id);
     Store activateStore(Long id);
+    boolean isStoreOpen(Long id);
 }

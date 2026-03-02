@@ -49,4 +49,9 @@ public class StoreController {
     public Result<Store> activate(@PathVariable Long id) {
         return Result.success(storeService.activateStore(id));
     }
+
+    @GetMapping("/{id}/is-open")
+    public Result<Boolean> isOpen(@PathVariable Long id) {
+        return Result.success(storeService.isStoreOpen(id));
+    }
 }
