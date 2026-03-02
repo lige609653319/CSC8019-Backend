@@ -8,6 +8,8 @@ public interface StoreService {
     List<Store> getAllStores();
     List<Store> getStoresByStatus(String status);
     List<Store> getStoresByName(String name);
+    List<Store> getOpenStores();
+    List<Store> getNearbyStores(Double latitude, Double longitude, Double radius);
     Store getStoreById(Long id);
     Store createStore(Store store);
     Store updateStore(Long id, Store store);

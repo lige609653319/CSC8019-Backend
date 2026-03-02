@@ -26,6 +26,10 @@ public class Store {
 
     private Double longitude;
 
+    private String phone;
+
+    private String email;
+
     private String status;
 
     private String openingTime;

@@ -33,6 +33,19 @@ public class StoreController {
         return Result.success(storeService.getAllStores());
     }
 
+    @GetMapping("/open-stores")
+    public Result<List<Store>> openStores() {
+        return Result.success(storeService.getOpenStores());
+    }
+
+    @GetMapping("/nearby")
+    public Result<List<Store>> nearbyStores(
+            @RequestParam Double latitude,
+            @RequestParam Double longitude,
+            @RequestParam Double radius) {
+        return Result.success(storeService.getNearbyStores(latitude, longitude, radius));
+    }
+
     @GetMapping("/{id}")
     public Result<Store> get(@PathVariable Long id) {
         return Result.success(storeService.getStoreById(id));

@@ -83,6 +83,8 @@ public class StoreServiceImpl implements StoreService {
         existingStore.setAddress(store.getAddress());
         existingStore.setLatitude(store.getLatitude());
         existingStore.setLongitude(store.getLongitude());
+        existingStore.setPhone(store.getPhone());
+        existingStore.setEmail(store.getEmail());
 
         if (store.getStatus() != null && !store.getStatus().trim().isEmpty()) {
             existingStore.setStatus(store.getStatus().trim());
@@ -142,6 +144,60 @@ public class StoreServiceImpl implements StoreService {
         }
     }
 
+    @Override
+    public List<Store> getOpenStores() {
+        LocalTime now = LocalTime.now();
+
+        return storeRepository.findAll().stream()
+                .filter(store -> "ACTIVE".equalsIgnoreCase(store.getStatus()))
+                .filter(store -> store.getOpeningTime() != null && !store.getOpeningTime().trim().isEmpty())
+                .filter(store -> store.getClosingTime() != null && !store.getClosingTime().trim().isEmpty())
+                .filter(store -> {
+                    try {
+                        LocalTime open = LocalTime.parse(store.getOpeningTime().trim());
+                        LocalTime close = LocalTime.parse(store.getClosingTime().trim());
+                        return !now.isBefore(open) && now.isBefore(close);
+                    } catch (DateTimeParseException e) {
+                        return false;
+                    }
+                })
+                .toList();
+    }
+
+    @Override
+    public List<Store> getNearbyStores(Double latitude, Double longitude, Double radius) {
+        if (latitude == null || longitude == null || radius == null) {
+            throw new CustomException(ResultCode.FAILED, "Latitude, longitude and radius must all be provided.");
+        }
+
+        if (radius <= 0) {
+            throw new CustomException(ResultCode.FAILED, "Radius must be greater than 0.");
+        }
+
+        LocalTime now = LocalTime.now();
+
+        return storeRepository.findAll().stream()
+                .filter(store -> "ACTIVE".equalsIgnoreCase(store.getStatus()))
+                .filter(store -> store.getOpeningTime() != null && !store.getOpeningTime().trim().isEmpty())
+                .filter(store -> store.getClosingTime() != null && !store.getClosingTime().trim().isEmpty())
+                .filter(store -> store.getLatitude() != null && store.getLongitude() != null)
+                .filter(store -> {
+                    try {
+                        LocalTime open = LocalTime.parse(store.getOpeningTime().trim());
+                        LocalTime close = LocalTime.parse(store.getClosingTime().trim());
+                        return !now.isBefore(open) && now.isBefore(close);
+                    } catch (DateTimeParseException e) {
+                        return false;
+                    }
+                })
+                .filter(store -> calculateDistance(latitude, longitude, store.getLatitude(), store.getLongitude()) <= radius)
+                .sorted((a, b) -> Double.compare(
+                        calculateDistance(latitude, longitude, a.getLatitude(), a.getLongitude()),
+                        calculateDistance(latitude, longitude, b.getLatitude(), b.getLongitude())
+                ))
+                .toList();
+    }
+
     private void validateBusinessHours(String openingTime, String closingTime) {
         boolean openingBlank = openingTime == null || openingTime.trim().isEmpty();
         boolean closingBlank = closingTime == null || closingTime.trim().isEmpty();
@@ -182,5 +238,20 @@ public class StoreServiceImpl implements StoreService {
         if (longitude < -180 || longitude > 180) {
             throw new CustomException(ResultCode.FAILED, "Longitude must be between -180 and 180.");
         }
+    }
+
+    private double calculateDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
+        final double earthRadius = 6371.0; // km
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return earthRadius * c;
     }
 }
