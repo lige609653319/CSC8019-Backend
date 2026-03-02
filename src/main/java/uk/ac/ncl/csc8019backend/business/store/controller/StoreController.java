@@ -31,4 +31,9 @@ public class StoreController {
     public Result<Store> create(@RequestBody Store store) {
         return Result.success(storeService.createStore(store));
     }
+
+    @PutMapping("/{id}")
+    public Result<Store> update(@PathVariable Long id, @RequestBody Store store) {
+        return Result.success(storeService.updateStore(id, store));
+    }
 }

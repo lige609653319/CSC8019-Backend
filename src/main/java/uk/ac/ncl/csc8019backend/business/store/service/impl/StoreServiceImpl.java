@@ -46,4 +46,22 @@ public class StoreServiceImpl implements StoreService {
         store.setCode(store.getCode().trim());
         return storeRepository.save(store);
     }
+
+    @Override
+    public Store updateStore(Long id, Store store) {
+        Store existingStore = storeRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ResultCode.FAILED, "Store not found."));
+
+        if (store.getName() != null && !store.getName().trim().isEmpty()) {
+            existingStore.setName(store.getName().trim());
+        }
+
+        existingStore.setLocationName(store.getLocationName());
+
+        if (store.getStatus() != null && !store.getStatus().trim().isEmpty()) {
+            existingStore.setStatus(store.getStatus().trim());
+        }
+
+        return storeRepository.save(existingStore);
+    }
 }

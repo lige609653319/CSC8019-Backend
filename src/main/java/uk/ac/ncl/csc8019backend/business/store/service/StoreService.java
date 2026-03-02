@@ -8,4 +8,5 @@ public interface StoreService {
     List<Store> getAllStores();
     Store getStoreById(Long id);
     Store createStore(Store store);
+    Store updateStore(Long id, Store store);
 }
