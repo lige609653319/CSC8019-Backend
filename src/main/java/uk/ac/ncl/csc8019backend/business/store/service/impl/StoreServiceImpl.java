@@ -35,6 +35,15 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    public List<Store> getStoresByName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new CustomException(ResultCode.FAILED, "Name cannot be empty.");
+        }
+
+        return storeRepository.findByNameContainingIgnoreCase(name.trim());
+    }
+
+    @Override
     public Store getStoreById(Long id) {
         return storeRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ResultCode.FAILED, "Store not found."));
@@ -56,6 +65,7 @@ public class StoreServiceImpl implements StoreService {
 
         store.setCode(store.getCode().trim());
         validateBusinessHours(store.getOpeningTime(), store.getClosingTime());
+        validateCoordinates(store.getLatitude(), store.getLongitude());
 
         return storeRepository.save(store);
     }
@@ -70,6 +80,9 @@ public class StoreServiceImpl implements StoreService {
         }
 
         existingStore.setLocationName(store.getLocationName());
+        existingStore.setAddress(store.getAddress());
+        existingStore.setLatitude(store.getLatitude());
+        existingStore.setLongitude(store.getLongitude());
 
         if (store.getStatus() != null && !store.getStatus().trim().isEmpty()) {
             existingStore.setStatus(store.getStatus().trim());
@@ -150,6 +163,24 @@ public class StoreServiceImpl implements StoreService {
             }
         } catch (DateTimeParseException e) {
             throw new CustomException(ResultCode.FAILED, "Time format must be HH:mm.");
+        }
+    }
+
+    private void validateCoordinates(Double latitude, Double longitude) {
+        if (latitude == null && longitude == null) {
+            return;
+        }
+
+        if (latitude == null || longitude == null) {
+            throw new CustomException(ResultCode.FAILED, "Latitude and longitude must both be provided.");
+        }
+
+        if (latitude < -90 || latitude > 90) {
+            throw new CustomException(ResultCode.FAILED, "Latitude must be between -90 and 90.");
+        }
+
+        if (longitude < -180 || longitude > 180) {
+            throw new CustomException(ResultCode.FAILED, "Longitude must be between -180 and 180.");
         }
     }
 }

@@ -20,6 +20,12 @@ public class Store {
 
     private String locationName;
 
+    private String address;
+
+    private Double latitude;
+
+    private Double longitude;
+
     private String status;
 
     private String openingTime;

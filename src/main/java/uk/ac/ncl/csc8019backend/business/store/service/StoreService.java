@@ -7,6 +7,7 @@ import java.util.List;
 public interface StoreService {
     List<Store> getAllStores();
     List<Store> getStoresByStatus(String status);
+    List<Store> getStoresByName(String name);
     Store getStoreById(Long id);
     Store createStore(Store store);
     Store updateStore(Long id, Store store);

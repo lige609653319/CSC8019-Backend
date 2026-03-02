@@ -18,11 +18,19 @@ public class StoreController {
     }
 
     @GetMapping("/list")
-    public Result<List<Store>> list(@RequestParam(required = false) String status) {
-        if (status == null || status.trim().isEmpty()) {
-            return Result.success(storeService.getAllStores());
+    public Result<List<Store>> list(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String name) {
+
+        if (status != null && !status.trim().isEmpty()) {
+            return Result.success(storeService.getStoresByStatus(status));
         }
-        return Result.success(storeService.getStoresByStatus(status));
+
+        if (name != null && !name.trim().isEmpty()) {
+            return Result.success(storeService.getStoresByName(name));
+        }
+
+        return Result.success(storeService.getAllStores());
     }
 
     @GetMapping("/{id}")
