@@ -24,6 +24,15 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    public List<Store> getStoresByStatus(String status) {
+        if (status == null || status.trim().isEmpty()) {
+            throw new CustomException(ResultCode.FAILED, "Status cannot be empty.");
+        }
+
+        return storeRepository.findByStatus(status.trim());
+    }
+
+    @Override
     public Store getStoreById(Long id) {
         return storeRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ResultCode.FAILED, "Store not found."));
@@ -62,6 +71,24 @@ public class StoreServiceImpl implements StoreService {
             existingStore.setStatus(store.getStatus().trim());
         }
 
+        return storeRepository.save(existingStore);
+    }
+
+    @Override
+    public Store disableStore(Long id) {
+        Store existingStore = storeRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ResultCode.FAILED, "Store not found."));
+
+        existingStore.setStatus("INACTIVE");
+        return storeRepository.save(existingStore);
+    }
+
+    @Override
+    public Store activateStore(Long id) {
+        Store existingStore = storeRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ResultCode.FAILED, "Store not found."));
+
+        existingStore.setStatus("ACTIVE");
         return storeRepository.save(existingStore);
     }
 }

@@ -18,8 +18,11 @@ public class StoreController {
     }
 
     @GetMapping("/list")
-    public Result<List<Store>> list() {
-        return Result.success(storeService.getAllStores());
+    public Result<List<Store>> list(@RequestParam(required = false) String status) {
+        if (status == null || status.trim().isEmpty()) {
+            return Result.success(storeService.getAllStores());
+        }
+        return Result.success(storeService.getStoresByStatus(status));
     }
 
     @GetMapping("/{id}")
@@ -35,5 +38,15 @@ public class StoreController {
     @PutMapping("/{id}")
     public Result<Store> update(@PathVariable Long id, @RequestBody Store store) {
         return Result.success(storeService.updateStore(id, store));
+    }
+
+    @PatchMapping("/{id}/disable")
+    public Result<Store> disable(@PathVariable Long id) {
+        return Result.success(storeService.disableStore(id));
+    }
+
+    @PatchMapping("/{id}/activate")
+    public Result<Store> activate(@PathVariable Long id) {
+        return Result.success(storeService.activateStore(id));
     }
 }
