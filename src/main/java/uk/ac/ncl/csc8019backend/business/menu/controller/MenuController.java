@@ -9,8 +9,9 @@ import uk.ac.ncl.csc8019backend.system.common.Result;
 
 import java.util.List;
 
+@CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/menu") //指定请求路径
+@RequestMapping("/api/menu")
 @AllArgsConstructor
 public class MenuController {
     private final MenuService menuService;
@@ -24,7 +25,6 @@ public class MenuController {
     public Result<Menu> create(@Valid @RequestBody Menu menu) { //@Valid: check validation
         System.out.println(menu.getId() + " " + menu.getName() + " " + menu.getCategory() + " " + menu.getRegularPrice() + " " + menu.getLargePrice());
         return Result.success(menuService.createMenu(menu));
-        //三层架构 调用服务接口里的创建menu方法，而这个方法又是在对应的impl类里实现的，而impl里的实现又是根据repository里的方法
     }
 
     @DeleteMapping("/{id}")

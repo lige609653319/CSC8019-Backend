@@ -9,7 +9,7 @@ import uk.ac.ncl.csc8019backend.business.menu.service.MenuService;
 import java.util.List;
 
 @Service
-@AllArgsConstructor //有参构造
+@AllArgsConstructor
 public class MenuServiceImpl implements MenuService {
     private final MenuRepository menuRepository;
 

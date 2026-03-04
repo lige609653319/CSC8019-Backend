@@ -5,11 +5,11 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "menu") //和数据库中的menu表做映射 mapping to menu table of database
-@Data //auto create getter & setter
+@Table(name = "menu") // Mapping to menu table of database
+@Data // Auto create getter & setter
 public class Menu {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) //Id generate strategy
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank(message = "Name can not be blank")
