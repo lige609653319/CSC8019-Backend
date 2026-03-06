@@ -13,9 +13,11 @@ public class Menu {
     private Long id;
 
     @NotBlank(message = "Name can not be blank")
+    @Column(nullable = false)
     private String name;
 
     @NotNull
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Category category;
 
@@ -25,10 +27,12 @@ public class Menu {
     private Double largePrice;
 
     @NotNull(message = "Stock cannot be null")
+    @Column(nullable = false)
     @Min(value = 0, message = "Stock can not be negative")
     private Integer stock;
 
     @NotNull(message = "State cannot be null")
+    @Column(nullable = false)
     private Boolean isAvailable;
 
     @PrePersist

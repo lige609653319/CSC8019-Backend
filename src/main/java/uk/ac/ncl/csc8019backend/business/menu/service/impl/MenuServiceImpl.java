@@ -2,6 +2,7 @@ package uk.ac.ncl.csc8019backend.business.menu.service.impl;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.ac.ncl.csc8019backend.business.menu.entity.Category;
 import uk.ac.ncl.csc8019backend.business.menu.entity.Menu;
 import uk.ac.ncl.csc8019backend.business.menu.repository.MenuRepository;
 import uk.ac.ncl.csc8019backend.business.menu.service.MenuService;
@@ -53,6 +54,21 @@ public class MenuServiceImpl implements MenuService {
         }
 
         return menuRepository.save(existing);
+    }
+
+    @Override
+    public List<Menu> getMenuByName(String name) {
+        return menuRepository.findByName(name);
+    }
+
+    @Override
+    public List<Menu> getMenuByCategory(Category category) {
+        return menuRepository.findByCategory(category);
+    }
+
+    @Override
+    public List<Menu> getMenuByNameAndCategory(String name, Category category) {
+        return menuRepository.findByNameAndCategory(name, category);
     }
 
 
