@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.ac.ncl.csc8019backend.business.menu.entity.Category;
 import uk.ac.ncl.csc8019backend.business.menu.entity.Menu;
+import uk.ac.ncl.csc8019backend.business.menu.entity.MenuSku;
 import uk.ac.ncl.csc8019backend.business.menu.repository.MenuRepository;
+import uk.ac.ncl.csc8019backend.business.menu.repository.MenuSkuRepository;
 import uk.ac.ncl.csc8019backend.business.menu.service.MenuService;
 
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class MenuServiceImpl implements MenuService {
     private final MenuRepository menuRepository;
+    private final MenuSkuRepository menuSkuRepository;
 
     @Override
     public List<Menu> getAllMenus() {
@@ -40,20 +43,32 @@ public class MenuServiceImpl implements MenuService {
         if (menu.getCategory() != null) {
             existing.setCategory(menu.getCategory());
         }
-        if (menu.getRegularPrice() != null) {
-            existing.setRegularPrice(menu.getRegularPrice());
-        }
-        if (menu.getLargePrice() != null) {
-            existing.setLargePrice(menu.getLargePrice());
-        }
-        if (menu.getStock() != null) {
-            existing.setStock(menu.getStock());
-        }
-        if (menu.getIsAvailable() != null) {
-            existing.setIsAvailable(menu.getIsAvailable());
+        return menuRepository.save(existing);
+    }
+
+    @Override
+    public MenuSku patchMenuSku(Long id, MenuSku sku) {
+
+        MenuSku existing = menuSkuRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("SKU not found"));
+
+        if (sku.getSize() != null) {
+            existing.setSize(sku.getSize());
         }
 
-        return menuRepository.save(existing);
+        if (sku.getPrice() != null) {
+            existing.setPrice(sku.getPrice());
+        }
+
+        if (sku.getStock() != null) {
+            existing.setStock(sku.getStock());
+        }
+
+        if (sku.getIsAvailable() != null) {
+            existing.setIsAvailable(sku.getIsAvailable());
+        }
+
+        return menuSkuRepository.save(existing);
     }
 
     @Override

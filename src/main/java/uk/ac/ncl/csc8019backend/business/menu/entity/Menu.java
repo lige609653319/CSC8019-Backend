@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Entity
 @Table(name = "menu") // Mapping to menu table of database
 @Data // Auto create getter & setter
@@ -21,26 +23,7 @@ public class Menu {
     @Enumerated(EnumType.STRING)
     private Category category;
 
-    @Positive(message = "Price must be positive")
-    private Double regularPrice;
-    @Positive(message = "Price must be positive")
-    private Double largePrice;
-
-    @NotNull(message = "Stock cannot be null")
-    @Column(nullable = false)
-    @Min(value = 0, message = "Stock can not be negative")
-    private Integer stock;
-
-    @NotNull(message = "State cannot be null")
-    @Column(nullable = false)
-    private Boolean isAvailable;
-
-    @PrePersist
-    @PreUpdate
-    private void stockLogic() { // State is unavailable when the stock is 0.
-        if (getStock() <= 0) {
-            setIsAvailable(false);
-        }
-    }
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<MenuSku> skus;
 
 }

@@ -3,6 +3,7 @@ package uk.ac.ncl.csc8019backend.business.menu.service;
 import org.springframework.stereotype.Service;
 import uk.ac.ncl.csc8019backend.business.menu.entity.Category;
 import uk.ac.ncl.csc8019backend.business.menu.entity.Menu;
+import uk.ac.ncl.csc8019backend.business.menu.entity.MenuSku;
 
 import java.util.List;
 
@@ -15,6 +16,8 @@ public interface MenuService {
     void deleteMenu(Long id);
 
     Menu patchMenu(Long id, Menu menu);
+
+    MenuSku patchMenuSku(Long id, MenuSku sku);
 
     List<Menu> getMenuByName(String name);
 
