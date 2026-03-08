@@ -3,6 +3,7 @@ package uk.ac.ncl.csc8019backend.business.menu.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import uk.ac.ncl.csc8019backend.business.store.entity.Store;
 
 import java.util.List;
 
@@ -25,5 +26,14 @@ public class Menu {
 
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<MenuSku> skus;
+
+    /**
+     * Store that owns this menu item.
+     * Each store can have multiple menu items and menus may vary between stores.
+     */
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "store_id", nullable = false)
+    private Store store;
 
 }
