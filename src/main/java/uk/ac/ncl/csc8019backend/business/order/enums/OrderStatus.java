@@ -5,7 +5,7 @@ import lombok.Getter;
 // OrderStatus.java
 @Getter
 public enum OrderStatus {
-    PENDING(0), PREPARING(1), COMPLETED(2), DELIVERED(3), CANCELLED(4);
+    PENDING(1), PREPARING(2), COMPLETED(3), DELIVERED(4), CANCELLED(5);
     private final int value;
     OrderStatus(int value) { this.value = value; }
 

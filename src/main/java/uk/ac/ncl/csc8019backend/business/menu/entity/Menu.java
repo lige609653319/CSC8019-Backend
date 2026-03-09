@@ -1,15 +1,19 @@
 package uk.ac.ncl.csc8019backend.business.menu.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import uk.ac.ncl.csc8019backend.business.store.entity.Store;
 
 import java.util.List;
 
 @Entity
 @Table(name = "menu") // Mapping to menu table of database
-@Data // Auto create getter & setter
+@Getter
+@Setter
 public class Menu {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +29,7 @@ public class Menu {
     private Category category;
 
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<MenuSku> skus;
 
     /**

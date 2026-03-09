@@ -13,5 +13,5 @@ public class OrderRequestDTO {
     private Long customerId;
     private BigDecimal totalPrice;
     private OrderType orderType;
-    private List<Long> coffeeIds;
+    private List<OrderItemRequestDTO> items;
 }
