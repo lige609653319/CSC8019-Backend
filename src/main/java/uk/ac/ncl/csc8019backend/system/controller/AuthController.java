@@ -10,10 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ncl.csc8019backend.system.common.Result;
 import uk.ac.ncl.csc8019backend.system.dto.LoginRequest;
+import uk.ac.ncl.csc8019backend.system.dto.LoginResponse;
 import uk.ac.ncl.csc8019backend.system.security.JwtUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,7 +26,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Result<Map<String, String>> login(@RequestBody LoginRequest loginRequest) {
+    public Result<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
         );
@@ -36,9 +34,7 @@ public class AuthController {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String token = jwtUtils.generateToken(userDetails);
 
-        Map<String, String> data = new HashMap<>();
-        data.put("token", token);
-        data.put("tokenHead", "Bearer ");
+        LoginResponse data = new LoginResponse(token, "Bearer ");
 
         return Result.success(data, "Login successful");
     }
