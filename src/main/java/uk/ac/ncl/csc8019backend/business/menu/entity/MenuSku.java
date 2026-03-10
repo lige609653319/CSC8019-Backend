@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "menu_sku")
 @Getter
@@ -30,9 +32,9 @@ public class MenuSku {
     private Size size;
 
     @NotNull
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "DECIMAL(10, 2)")
     @Positive(message = "Price must be positive")
-    private Double price;
+    private BigDecimal price;
 
     @NotNull(message = "Stock cannot be null")
     @Column(nullable = false)
