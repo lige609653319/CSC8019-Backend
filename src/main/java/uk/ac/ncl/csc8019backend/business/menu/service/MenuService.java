@@ -19,9 +19,11 @@ public interface MenuService {
 
     MenuSku patchMenuSku(Long id, MenuSku sku);
 
-    List<Menu> getMenuByName(String name);
+    List<Menu> getMenuByStoreId(Long storeId);
 
-    List<Menu> getMenuByCategory(Category category);
+    List<Menu> getMenuByName(Long storeId, String name);
 
-    List<Menu> getMenuByNameAndCategory(String name, Category category);
+    List<Menu> getMenuByCategory(Long storeId, Category category);
+
+    List<Menu> getMenuByNameAndCategory(Long storeId, String name, Category category);
 }
