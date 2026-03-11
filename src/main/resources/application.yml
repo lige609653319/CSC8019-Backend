@@ -1,11 +1,13 @@
 spring:
   application:
     name: CSC8019-backend
+
   datasource:
     url: jdbc:mysql://database-1.cnqwmw824u8a.eu-north-1.rds.amazonaws.com:3306/CSC8019?useSSL=false&serverTimezone=UTC
     username: root
     password: CSC8019!
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -14,6 +16,27 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
 
+
+  kafka:
+    bootstrap-servers: pkc-z3p1v0.europe-west2.gcp.confluent.cloud:9092
+    consumer:
+      group-id: SC-3929aa57-f69e-4571-9712-d7f78358efd5
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: latest
+      properties:
+        security.protocol: SASL_SSL
+        sasl.mechanism: PLAIN
+        sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="M4M45M55RHLB2OM3" password="cflt09JT+YB18xnNRoR9f4wQ4u23zhWheOXoTk0ZWIzpJkv+8lcgjN4gXRDvnFCg";
+
+
 jwt:
   secret: "myVerySecureAndSecretKeyForHS256AlgorithmWhichIsAtLeast32BytesLong"
   expiration: 604800000 # 7 days in milliseconds
+
+
+logging:
+  level:
+    uk.ac.ncl.csc8019backend.business.raildata: DEBUG
+    org.apache.kafka: INFO
+    org.springframework.kafka: INFO
