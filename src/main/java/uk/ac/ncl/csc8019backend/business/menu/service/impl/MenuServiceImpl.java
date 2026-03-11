@@ -72,19 +72,23 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public List<Menu> getMenuByName(String name) {
-        return menuRepository.findByName(name);
+    public List<Menu> getMenuByStoreId(Long storeId) {
+        return menuRepository.findByStoreId(storeId);
     }
 
     @Override
-    public List<Menu> getMenuByCategory(Category category) {
-        return menuRepository.findByCategory(category);
+    public List<Menu> getMenuByName(Long storeId, String name) {
+        return menuRepository.findByStoreIdAndName(storeId, name);
     }
 
     @Override
-    public List<Menu> getMenuByNameAndCategory(String name, Category category) {
-        return menuRepository.findByNameAndCategory(name, category);
+    public List<Menu> getMenuByCategory(Long storeId, Category category) {
+        return menuRepository.findByStoreIdAndCategory(storeId, category);
     }
 
+    @Override
+    public List<Menu> getMenuByNameAndCategory(Long storeId, String name, Category category) {
+        return menuRepository.findByStoreIdAndNameAndCategory(storeId, name, category);
+    }
 
 }

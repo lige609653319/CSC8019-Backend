@@ -56,17 +56,27 @@ public class MenuController {
     // @RequestParam: read parameters from query parameters (not from the path)
     @GetMapping("/search")
     public Result<List<Menu>> get(@RequestParam(required = false) String name,
-                                  @RequestParam(required = false) Category category) {
-        if (name != null && category != null) {
-            return Result.success(menuService.getMenuByNameAndCategory(name, category));
+                                  @RequestParam(required = false) Category category,
+                                  @RequestParam(required = false) Long storeId) {
+
+        // Default: display menus for storeId = 1 (Long)
+        if (storeId == null) {
+            storeId = 1L;
         }
-        if (name != null) {
-            return Result.success(menuService.getMenuByName(name));
+
+        if (name != null && !name.trim().isEmpty() && category != null) {
+            return Result.success(menuService.getMenuByNameAndCategory(storeId, name, category));
         }
+
+        if (name != null && !name.trim().isEmpty()) {
+            return Result.success(menuService.getMenuByName(storeId, name));
+        }
+
         if (category != null) {
-            return Result.success(menuService.getMenuByCategory(category));
+            return Result.success(menuService.getMenuByCategory(storeId, category));
         }
-        return Result.success(menuService.getAllMenus());
+
+        return Result.success(menuService.getMenuByStoreId(storeId));
     }
 
 
