@@ -43,7 +43,7 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- 👇 新增：Spring Kafka 支持 -->
+
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
@@ -89,7 +89,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- 👇 新增：Jackson 对 Java 8 时间类型的支持 -->
+
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
