@@ -9,6 +9,7 @@ public enum ResultCode {
     UNAUTHORIZED(401, "Unauthorized"),
     FORBIDDEN(403, "Forbidden"),
     VALIDATE_FAILED(404, "Not Found"),
+    BAD_REQUEST(400, "Bad Request"),
     FAILED(500, "Failed");
 
     private final int code;
