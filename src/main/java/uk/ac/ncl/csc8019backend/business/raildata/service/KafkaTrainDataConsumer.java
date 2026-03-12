@@ -14,6 +14,7 @@ import uk.ac.ncl.csc8019backend.business.raildata.repository.TrainServiceReposit
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class KafkaTrainDataConsumer {
@@ -25,6 +26,14 @@ public class KafkaTrainDataConsumer {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+
+
+    private static final Set<String> CRAMLINGTON_STATION_CODES = Set.of(
+            "CRL",
+            "CML",
+            "74800",
+            "74801"
+    );
 
     public KafkaTrainDataConsumer() {
         objectMapper.registerModule(new JavaTimeModule());
@@ -52,7 +61,6 @@ public class KafkaTrainDataConsumer {
 
     private void processTrainMessage(JsonNode msg) {
         try {
-
             JsonNode body = msg.path("body");
             if (body.isMissingNode() || body.isNull()) {
                 logger.debug("Message has no body, skipping");
@@ -72,12 +80,38 @@ public class KafkaTrainDataConsumer {
             String platform = getValue(body, "platform");
             String variationStatus = getValue(body, "variation_status");
 
+            String originLocation = getValue(body, "origin_location");
+            String destinationLocation = getValue(body, "destination_location");
 
-            if (!"ARRIVAL".equals(eventType)) {
-                logger.debug("Skipping non-arrival event: {}", eventType);
-
+            if (originLocation.isEmpty()) {
+                originLocation = getValue(body, "origin_stanox");
+            }
+            if (destinationLocation.isEmpty()) {
+                destinationLocation = getValue(body, "destination_stanox");
             }
 
+
+            boolean isCramlington = isCramlingtonStation(locStanox) ||
+                    isCramlingtonStation(originLocation) ||
+                    isCramlingtonStation(destinationLocation);
+
+
+            if (!isCramlington) {
+                logger.debug("Skipping non-Cramlington train: {} at station {}", trainId, locStanox);
+                return;
+            }
+
+            logger.debug("Processing {} event for Cramlington train {}", eventType, trainId);
+
+            LocalDateTime scheduledTime = null;
+            if (!plannedTime.isEmpty()) {
+                scheduledTime = parseTimestamp(plannedTime);
+            }
+
+            LocalDateTime actual = null;
+            if (!actualTime.isEmpty()) {
+                actual = parseTimestamp(actualTime);
+            }
 
             Optional<TrainService> existingTrain = trainServiceRepository.findByTrainId(trainId);
             TrainService train = existingTrain.orElse(new TrainService());
@@ -88,62 +122,101 @@ public class KafkaTrainDataConsumer {
             train.setLastUpdated(LocalDateTime.now());
             train.setIsActive(true);
 
-
-            try {
-                if (!plannedTime.isEmpty()) {
-
-                    if (plannedTime.matches("\\d+")) {
-                        long timestamp = Long.parseLong(plannedTime);
-                        LocalDateTime scheduled = LocalDateTime.ofEpochSecond(timestamp/1000, 0, java.time.ZoneOffset.UTC);
-                        train.setScheduledArrivalTime(scheduled);
-                    } else {
-                        LocalDateTime scheduled = LocalDateTime.parse(plannedTime, formatter);
-                        train.setScheduledArrivalTime(scheduled);
-                    }
-                }
-
-                if (!actualTime.isEmpty()) {
-                    LocalDateTime actual;
-                    if (actualTime.matches("\\d+")) {
-                        long timestamp = Long.parseLong(actualTime);
-                        actual = LocalDateTime.ofEpochSecond(timestamp/1000, 0, java.time.ZoneOffset.UTC);
-                    } else {
-                        actual = LocalDateTime.parse(actualTime, formatter);
-                    }
-                    train.setActualArrivalTime(actual);
-
-
-                    if (train.getScheduledArrivalTime() != null) {
-                        long delayMinutes = java.time.Duration.between(
-                                train.getScheduledArrivalTime(), actual).toMinutes();
-
-                        if (delayMinutes > 0) {
-                            train.setDelayMinutes((int) delayMinutes);
-                            train.setStatus("DELAYED");
-                        } else if (delayMinutes < 0) {
-                            train.setStatus("EARLY");
-                            train.setDelayMinutes(0);
-                        } else {
-                            train.setStatus("ON_TIME");
-                            train.setDelayMinutes(0);
-                        }
-                    }
-                } else if ("LATE".equals(variationStatus)) {
-                    train.setStatus("DELAYED");
-                    train.setDelayMinutes(5);
-                }
-            } catch (Exception e) {
-                logger.error("Time parsing error: {}", e.getMessage());
-                train.setStatus("UNKNOWN");
+            if (!originLocation.isEmpty()) {
+                train.setOriginStation(originLocation);
+            }
+            if (!destinationLocation.isEmpty()) {
+                train.setDestinationStation(destinationLocation);
             }
 
+            if ("ARRIVAL".equals(eventType)) {
+                if (scheduledTime != null) {
+                    train.setScheduledArrivalTime(scheduledTime);
+                }
+                if (actual != null) {
+                    train.setActualArrivalTime(actual);
+                }
+            } else if ("DEPARTURE".equals(eventType)) {
+                if (scheduledTime != null) {
+                    train.setScheduledDepartureTime(scheduledTime);
+                }
+                if (actual != null) {
+                    train.setEstimatedDepartureTime(actual);
+                }
+            }
+
+            if (actual != null) {
+                LocalDateTime scheduled = "ARRIVAL".equals(eventType) ?
+                        train.getScheduledArrivalTime() : train.getScheduledDepartureTime();
+
+                if (scheduled != null) {
+                    long delayMinutes = java.time.Duration.between(scheduled, actual).toMinutes();
+
+                    if (delayMinutes > 0) {
+                        train.setDelayMinutes((int) delayMinutes);
+                        train.setStatus("DELAYED");
+                    } else if (delayMinutes < 0) {
+                        train.setStatus("EARLY");
+                        train.setDelayMinutes(0);
+                    } else {
+                        train.setStatus("ON_TIME");
+                        train.setDelayMinutes(0);
+                    }
+                }
+            } else if ("LATE".equals(variationStatus)) {
+                train.setStatus("DELAYED");
+                train.setDelayMinutes(5);
+            } else if (train.getStatus() == null) {
+                if ("ARRIVAL".equals(eventType) || "DEPARTURE".equals(eventType)) {
+                    train.setStatus("ON_TIME");
+                    train.setDelayMinutes(0);
+                }
+            }
 
             TrainService saved = trainServiceRepository.save(train);
-            logger.info("Saved train: {} at station {} - {}",
-                    trainId, locStanox, train.getStatus());
+            logger.info("✅ CRAMLINGTON TRAIN: {} | Event: {} | From: {} → To: {} | Status: {} | Platform: {}",
+                    trainId, eventType,
+                    train.getOriginStation() != null ? train.getOriginStation() : "?",
+                    train.getDestinationStation() != null ? train.getDestinationStation() : "?",
+                    train.getStatus(), platform);
 
         } catch (Exception e) {
             logger.error("Error processing train message: {}", e.getMessage());
+        }
+    }
+
+
+    private boolean isCramlingtonStation(String stationCode) {
+        if (stationCode == null || stationCode.isEmpty()) {
+            return false;
+        }
+
+
+        if (CRAMLINGTON_STATION_CODES.contains(stationCode)) {
+            return true;
+        }
+
+
+        String lowerCode = stationCode.toLowerCase();
+        return lowerCode.contains("cram") ||
+                lowerCode.contains("cml") ||
+                lowerCode.contains("crl");
+    }
+
+    private LocalDateTime parseTimestamp(String timestamp) {
+        try {
+            if (timestamp.matches("\\d+")) {
+                long millis = Long.parseLong(timestamp);
+                return LocalDateTime.ofInstant(
+                        java.time.Instant.ofEpochMilli(millis),
+                        java.time.ZoneOffset.UTC
+                );
+            } else {
+                return LocalDateTime.parse(timestamp, formatter);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to parse timestamp: {}", timestamp);
+            throw e;
         }
     }
 
