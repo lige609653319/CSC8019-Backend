@@ -68,7 +68,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public Result<?> handleAuthenticationException(AuthenticationException e) {
         log.error("Authentication Failed: {}", e.getMessage());
-        return Result.unauthorized();
+        return Result.failed(ResultCode.LOGIN_FAILED);
     }
 
     @ExceptionHandler(Exception.class)
