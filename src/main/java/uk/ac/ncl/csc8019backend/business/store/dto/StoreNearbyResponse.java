@@ -2,23 +2,17 @@ package uk.ac.ncl.csc8019backend.business.store.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import uk.ac.ncl.csc8019backend.business.store.entity.Store;
+import lombok.NoArgsConstructor;
 
 /**
- * Nearby store response
- * Contains store data and distance
+ * Nearby store response dto
+ * Contains store info and distance
  */
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class StoreNearbyResponse {
 
-    /**
-     * Store data
-     */
-    private Store store;
-
-    /**
-     * Distance in kilometers
-     */
-    private double distance;
+    private StoreResponse store;
+    private Double distance;
 }

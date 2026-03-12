@@ -1,35 +1,31 @@
 package uk.ac.ncl.csc8019backend.business.store.controller;
 
 import org.springframework.web.bind.annotation.*;
+import uk.ac.ncl.csc8019backend.business.store.dto.StoreHoursRequest;
+import uk.ac.ncl.csc8019backend.business.store.dto.StoreHoursResponse;
+import uk.ac.ncl.csc8019backend.business.store.dto.StoreNearbyResponse;
+import uk.ac.ncl.csc8019backend.business.store.dto.StoreResponse;
 import uk.ac.ncl.csc8019backend.business.store.entity.Store;
 import uk.ac.ncl.csc8019backend.business.store.service.StoreService;
 import uk.ac.ncl.csc8019backend.system.common.Result;
-import uk.ac.ncl.csc8019backend.business.store.dto.StoreNearbyResponse;
 
 import java.util.List;
 
-/**
- * Store controller
- * Provides store related APIs
- */
 @RestController
 @RequestMapping("/api/store")
 public class StoreController {
 
     private final StoreService storeService;
 
-    /**
-     * Store controller constructor
-     */
     public StoreController(StoreService storeService) {
         this.storeService = storeService;
     }
 
     /**
-     * Get store list
+     * List stores
      */
     @GetMapping("/list")
-    public Result<List<Store>> list(
+    public Result<List<StoreResponse>> list(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String name) {
 
@@ -45,15 +41,15 @@ public class StoreController {
     }
 
     /**
-     * Get open stores
+     * List stores that are open now
      */
     @GetMapping("/open-stores")
-    public Result<List<Store>> openStores() {
+    public Result<List<StoreResponse>> openStores() {
         return Result.success(storeService.getOpenStores());
     }
 
     /**
-     * Get nearby stores
+     * List nearby stores that are open now
      */
     @GetMapping("/nearby")
     public Result<List<StoreNearbyResponse>> nearbyStores(
@@ -67,39 +63,39 @@ public class StoreController {
      * Get store by id
      */
     @GetMapping("/{id}")
-    public Result<Store> get(@PathVariable Long id) {
+    public Result<StoreResponse> get(@PathVariable Long id) {
         return Result.success(storeService.getStoreById(id));
     }
 
     /**
-     * Create a store
+     * Create store
      */
     @PostMapping("/create")
-    public Result<Store> create(@RequestBody Store store) {
+    public Result<StoreResponse> create(@RequestBody Store store) {
         return Result.success(storeService.createStore(store));
     }
 
     /**
-     * Update a store
+     * Update store
      */
     @PutMapping("/{id}")
-    public Result<Store> update(@PathVariable Long id, @RequestBody Store store) {
+    public Result<StoreResponse> update(@PathVariable Long id, @RequestBody Store store) {
         return Result.success(storeService.updateStore(id, store));
     }
 
     /**
-     * Disable a store
+     * Disable store
      */
     @PatchMapping("/{id}/disable")
-    public Result<Store> disable(@PathVariable Long id) {
+    public Result<StoreResponse> disable(@PathVariable Long id) {
         return Result.success(storeService.disableStore(id));
     }
 
     /**
-     * Activate a store
+     * Activate store
      */
     @PatchMapping("/{id}/activate")
-    public Result<Store> activate(@PathVariable Long id) {
+    public Result<StoreResponse> activate(@PathVariable Long id) {
         return Result.success(storeService.activateStore(id));
     }
 
@@ -109,5 +105,21 @@ public class StoreController {
     @GetMapping("/{id}/is-open")
     public Result<Boolean> isOpen(@PathVariable Long id) {
         return Result.success(storeService.isStoreOpen(id));
+    }
+
+    /**
+     * Get store weekly hours
+     */
+    @GetMapping("/{id}/hours")
+    public Result<List<StoreHoursResponse>> hours(@PathVariable Long id) {
+        return Result.success(storeService.getStoreHours(id));
+    }
+
+    /**
+     * Set store hours for one day
+     */
+    @PutMapping("/{id}/hours")
+    public Result<StoreHoursResponse> upsertHours(@PathVariable Long id, @RequestBody StoreHoursRequest request) {
+        return Result.success(storeService.upsertStoreHours(id, request));
     }
 }
