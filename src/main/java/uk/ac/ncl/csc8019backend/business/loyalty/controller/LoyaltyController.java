@@ -20,7 +20,6 @@ import java.util.List;
 @Validated
 public class LoyaltyController {
 
-    /** عند عدم تسجيل الدخول نستخدم هذا المستخدم التجريبي لعرض بيانات الولاء. */
     private static final String DEMO_USERNAME = "demo";
 
     private final LoyaltyService loyaltyService;
@@ -29,7 +28,6 @@ public class LoyaltyController {
         this.loyaltyService = loyaltyService;
     }
 
-    /** إذا كان المستخدم مسجّل الدخول نستخدم اسمه، وإلا نستخدم المستخدم التجريبي "demo". */
     private String getCurrentUsername(Authentication auth) {
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
             return auth.getName();

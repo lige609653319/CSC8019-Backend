@@ -25,9 +25,11 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, RestAuthenticationEntryPoint restAuthenticationEntryPoint) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
     }
 
     @Bean
@@ -54,10 +56,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(e -> e.authenticationEntryPoint(restAuthenticationEntryPoint))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
