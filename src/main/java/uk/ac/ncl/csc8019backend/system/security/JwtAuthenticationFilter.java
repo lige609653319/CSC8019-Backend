@@ -56,12 +56,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (JwtException e) {
             // Invalid, expired, or malformed token → do not set authentication.
-            logger.debug("Invalid or expired JWT: {}", e.getMessage());
+            logger.debug("Invalid or expired JWT: " + e.getMessage());
         } catch (Exception e) {
             // e.g. UsernameNotFoundException when user in token is not in DB.
             // Exceptions in the filter are not handled by @RestControllerAdvice, so we catch here
             // and continue without auth → controller returns 401 in Result format instead of 500 Whitelabel.
-            logger.debug("JWT auth failed: {}", e.getMessage());
+            logger.debug("JWT auth failed: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);
