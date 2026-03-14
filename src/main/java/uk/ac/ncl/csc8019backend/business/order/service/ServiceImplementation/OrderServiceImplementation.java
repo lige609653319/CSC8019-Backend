@@ -110,7 +110,7 @@ public class OrderServiceImplementation implements OrderService {
                 item.setOrder(savedOrder);
                 item.setMenuSku(sku);
                 item.setQuantity(itemDto.getQuantity()); // Use dynamic quantity
-                item.setPriceAtPurchase(BigDecimal.valueOf(sku.getPrice()).multiply(BigDecimal.valueOf(itemDto.getQuantity())));
+                item.setPriceAtPurchase(sku.getPrice().multiply(BigDecimal.valueOf(itemDto.getQuantity())));
 
                 OrderItem savedItem = orderItemRepository.save(item);
                 savedOrder.getItems().add(savedItem);
