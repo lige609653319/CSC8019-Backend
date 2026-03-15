@@ -14,7 +14,6 @@ import uk.ac.ncl.csc8019backend.business.raildata.repository.TrainServiceReposit
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class KafkaTrainDataConsumer {
@@ -24,16 +23,11 @@ public class KafkaTrainDataConsumer {
     @Autowired
     private TrainServiceRepository trainServiceRepository;
 
+    @Autowired
+    private StationMappingService stationMappingService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
-
-
-    private static final Set<String> CRAMLINGTON_STATION_CODES = Set.of(
-            "CRL",
-            "CML",
-            "74800",
-            "74801"
-    );
 
     public KafkaTrainDataConsumer() {
         objectMapper.registerModule(new JavaTimeModule());
@@ -90,18 +84,7 @@ public class KafkaTrainDataConsumer {
                 destinationLocation = getValue(body, "destination_stanox");
             }
 
-
-            boolean isCramlington = isCramlingtonStation(locStanox) ||
-                    isCramlingtonStation(originLocation) ||
-                    isCramlingtonStation(destinationLocation);
-
-
-            if (!isCramlington) {
-                logger.debug("Skipping non-Cramlington train: {} at station {}", trainId, locStanox);
-                return;
-            }
-
-            logger.debug("Processing {} event for Cramlington train {}", eventType, trainId);
+            logger.debug("Processing {} event for train {}", eventType, trainId);
 
             LocalDateTime scheduledTime = null;
             if (!plannedTime.isEmpty()) {
@@ -117,17 +100,43 @@ public class KafkaTrainDataConsumer {
             TrainService train = existingTrain.orElse(new TrainService());
 
             train.setTrainId(trainId);
-            train.setCurrentStation(locStanox);
+
+
+            String currentStationName = null;
+            if (locStanox != null && !locStanox.isEmpty()) {
+                currentStationName = stationMappingService.getStationNameByStanox(locStanox);
+                logger.info("🔍 Station code translation: '{}' -> '{}'", locStanox, currentStationName);
+
+                if (currentStationName != null) {
+                    train.setCurrentStation(currentStationName);
+                } else {
+                    train.setCurrentStation(locStanox);
+                    logger.warn("⚠️ No translation found for station code: {}", locStanox);
+                }
+            } else {
+                train.setCurrentStation("Unknown");
+                logger.debug("locStanox is null or empty");
+            }
+
             train.setPlatform(platform);
             train.setLastUpdated(LocalDateTime.now());
             train.setIsActive(true);
 
+
             if (!originLocation.isEmpty()) {
-                train.setOriginStation(originLocation);
+                String originName = stationMappingService.getStationNameByStanox(originLocation);
+                train.setOriginStation(originName != null ? originName : originLocation);
+            } else {
+                train.setOriginStation("Unknown");
             }
+
             if (!destinationLocation.isEmpty()) {
-                train.setDestinationStation(destinationLocation);
+                String destName = stationMappingService.getStationNameByStanox(destinationLocation);
+                train.setDestinationStation(destName != null ? destName : destinationLocation);
+            } else {
+                train.setDestinationStation("Unknown");
             }
+
 
             if ("ARRIVAL".equals(eventType)) {
                 if (scheduledTime != null) {
@@ -144,6 +153,7 @@ public class KafkaTrainDataConsumer {
                     train.setEstimatedDepartureTime(actual);
                 }
             }
+
 
             if (actual != null) {
                 LocalDateTime scheduled = "ARRIVAL".equals(eventType) ?
@@ -174,33 +184,16 @@ public class KafkaTrainDataConsumer {
             }
 
             TrainService saved = trainServiceRepository.save(train);
-            logger.info("✅ CRAMLINGTON TRAIN: {} | Event: {} | From: {} → To: {} | Status: {} | Platform: {}",
-                    trainId, eventType,
-                    train.getOriginStation() != null ? train.getOriginStation() : "?",
-                    train.getDestinationStation() != null ? train.getDestinationStation() : "?",
-                    train.getStatus(), platform);
+            logger.info("✅ Saved train: {} | Current: {} | Status: {} | Platform: {}",
+                    trainId,
+                    train.getCurrentStation(),
+                    train.getStatus(),
+                    platform);
 
         } catch (Exception e) {
             logger.error("Error processing train message: {}", e.getMessage());
+            e.printStackTrace();
         }
-    }
-
-
-    private boolean isCramlingtonStation(String stationCode) {
-        if (stationCode == null || stationCode.isEmpty()) {
-            return false;
-        }
-
-
-        if (CRAMLINGTON_STATION_CODES.contains(stationCode)) {
-            return true;
-        }
-
-
-        String lowerCode = stationCode.toLowerCase();
-        return lowerCode.contains("cram") ||
-                lowerCode.contains("cml") ||
-                lowerCode.contains("crl");
     }
 
     private LocalDateTime parseTimestamp(String timestamp) {
