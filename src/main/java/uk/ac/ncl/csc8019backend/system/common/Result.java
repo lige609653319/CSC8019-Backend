@@ -51,4 +51,9 @@ public class Result<T> {
     public static <T> Result<T> forbidden() {
         return new Result<>(ResultCode.FORBIDDEN.getCode(), ResultCode.FORBIDDEN.getMessage(), null);
     }
+
+    /** Use for validation errors (e.g. @Valid failures) so all API responses stay in Result format. */
+    public static <T> Result<T> validationFailed(String message) {
+        return new Result<>(ResultCode.BAD_REQUEST.getCode(), message != null ? message : ResultCode.BAD_REQUEST.getMessage(), null);
+    }
 }

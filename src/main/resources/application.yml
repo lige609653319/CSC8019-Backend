@@ -1,9 +1,12 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: CSC8019-backend
 
   datasource:
-    url: jdbc:mysql://database-1.cnqwmw824u8a.eu-north-1.rds.amazonaws.com:3306/CSC8019?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://database-1.cnqwmw824u8a.eu-north-1.rds.amazonaws.com:3306/CSC8019?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: root
     password: CSC8019!
     driver-class-name: com.mysql.cj.jdbc.Driver
